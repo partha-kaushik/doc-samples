@@ -1,0 +1,17 @@
+[master:vars]
+ansible_connection=ssh
+ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+ansible_user=root
+ansible_ssh_pass=MyCompl3xPwd
+
+[master]
+<ip-address-masternode>
+
+[webservers]
+<web1-ip-address>
+<web2-ip-address>
+<web3-ip-address>
+
+[dbservers]
+<db-ha1-ip-address>
+<db-ha2-ip-address>

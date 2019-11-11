@@ -1,0 +1,53 @@
+---
+#  Run command-line: ansible-playbook -i ./inventory.yml ./install_python_on_remote_node_pbook.yml
+##########
+# Before ansible can run against a target, we need to ensure that Python is installed on the target
+# This is done by setting gather_facts to False and running some pre_tasks using the 'raw' module.
+# The following code deals only with Ubuntu and RedHat; windows and other *nixes are not covered.
+##########
+- hosts: all
+  gather_facts: False
+  pre_tasks:
+    - name: check for redhat
+      raw: cat /etc/os-release | grep rhel
+      ignore_errors: true
+      register: redhat
+
+    - name: Is it RedHat
+      debug:
+        msg: " Redhat : {{ redhat.rc }} "
+
+    - name: check for Ubuntu
+      raw: cat /etc/os-release | grep ubuntu
+      ignore_errors: true
+      register: ubuntu
+
+    - name: Install python-minimal on Ubuntu
+      when: ubuntu is success
+      raw: bash -c "test -e /usr/bin/python || (apt -qqy update && apt install -qqy python-minimal)"
+      register: output
+      changed_when: output.stdout != ""
+
+    ### RedHat 7.4 or RedHat 7.5 targets will have Python 2.7 installed by default
+    - name: Install python27 on RedHat
+      when: redhat is success
+      raw: bash -c "test -e /usr/bin/python || (yum install -q -y python27)"
+      register: output
+      changed_when: output.stdout != ""
+
+    - name: Gathering Facts
+      setup:
+
+###  Roles Section #################
+  roles:
+  - include_role:
+    name: nfs_server_client
+    debug:
+      msg: "after we ran nfs_server_client role"
+
+  - include_role:
+    name: nfs_shares
+    debug:
+      msg: "after we ran nfs_shares"
+
+  ### add other roles as required
