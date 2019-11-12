@@ -16,4 +16,9 @@ Ansible Directory Structure:
 
 ![alt text](ansible_directory_structure.png "Directory Structure")
 
+## Playbooks
+A 'playbook' is a YAML file that holds the complete set of instructions to apply the set of configurations and app-installation on the host or hosts included in the inventory file. The primary responsibility of a playbook is to be the container for the set of roles you need for your host(s).
+
+Thus, a playbook will contain OS configuration roles, system-services-install roles, app-install roles etc. See 'install_python_on_remote_node_pbook.yml' for a sample.
+
 
