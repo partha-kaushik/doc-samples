@@ -1,0 +1,97 @@
+---
+# tasks
+- name: create directories to be exported
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: 02775
+    recurse: yes
+  with_items:
+    - /export/myapp_appdata
+    - /export/myapp_appdata/mysql
+    - /export/myapp_appdata/repositories
+    - /export/myapp_appdata/workspace
+    - /export/myapp_logs
+    - /export/myapp_db
+
+- name: set directory/file owmnership
+  file:
+    path: "{{ item }}"
+    owner: root
+    group: 1000
+    recurse: yes
+  with_items:
+    - /export/myapp_logs
+    - /export/myapp_appdata
+
+- name: set directory/file owmnership
+  file:
+    path: "{{ item }}"
+    owner: 999
+    group: 999
+    recurse: yes
+  with_items:
+    - /export/myapp_appdata/mysql
+    - /export/myapp_db
+
+## /etc/exports to be populated with permissions for the various shares
+## the subnets will be different on different cloud sites
+## have to get the public and private ip addresses and tweak /etc/exports accordingly
+#
+- name: get pwd
+  delegate_to: localhost
+  shell: pwd
+  args:
+    executable: /bin/bash
+  register: workdir
+
+- name: Set fyre-node.out file
+  set_fact:
+    node_details_file: "{{ workdir.stdout }}/node_ip_addresses.inpt"
+
+- name: check if  file exists
+  delegate_to: 127.0.0.1
+  stat:
+    path: "{{ workdir.stdout }}/node_ip_addresses.inpt"
+  register: node_ip_addresses.inpt
+
+- fail:
+    msg: "Aborting! Failed to find input vars file  {{ node_details_file }}"
+  when: not node_ip_addresses.inpt.stat.exists
+  
+- name: include vars free-form
+  include_vars: "{{ node_details_file }}"
+
+- debug: msg="{{ publicip  }}"
+- debug: msg="{{ privateip  }}"
+- debug: msg="{{ dns0 }}"
+- debug: msg="{{ workdir.stdout }}/node_ip_addresses.inpt"
+  
+- name: test
+  set_fact:
+    ip_list:
+      - "{{ publicip.split('.')[0] }}.{{ publicip.split('.')[1] }}.0.0/16"
+      - "{{ privateip.split('.')[0] }}.{{ privateip.split('.')[1] }}.0.0/16"
+
+- name: create/update /etc/exports
+  no_log: True
+  lineinfile:
+    create: yes
+    path: /etc/exports
+    line: "{{ item }}"
+  with_items:
+    - "/export {{ ip_list[0] }}(rw,fsid=0,insecure,no_subtree_check,async)"
+    - "/export/myapp_logs {{ ip_list[0] }}(rw,nohide,insecure,no_subtree_check,async)"
+    - "/export/myapp_db {{ ip_list[0] }}(rw,nohide,insecure,no_subtree_check,async)"
+    - "/export/myapp_appdata {{ ip_list[0] }}(rw,nohide,insecure,no_subtree_check,async)"
+    - "###"
+    - "/export {{ ip_list[1] }}(rw,fsid=0,insecure,no_subtree_check,async)"
+    - "/export/myapp_logs {{ ip_list[1] }}(rw,nohide,insecure,no_subtree_check,async)"
+    - "/export/myapp_db {{ ip_list[1] }}(rw,nohide,insecure,no_subtree_check,async)"
+    - "/export/myapp_appdata {{ ip_list[1] }}(rw,nohide,insecure,no_subtree_check,async)"
+
+- name: Run exportfs -ra
+  shell: /usr/sbin/exportfs -ra
+  args:
+    executable: /bin/bash
+
