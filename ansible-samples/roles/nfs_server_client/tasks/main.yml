@@ -1,0 +1,56 @@
+---
+# tasks:
+- name: Install nfsserver and  dependencies on Ubuntu
+  when:
+    - "ansible_os_family == 'Debian'"
+  apt: 
+    name: ['nfs-common', 'nfs-kernel-server'] 
+    state: present 
+    update_cache: yes
+
+- name: Install nfsserver and  dependencies on RHEL
+  when:
+   - "ansible_os_family == 'RedHat'"
+  yum:
+    name: ['nfs-utils', 'rpcbind', 'libnfsidmap']
+    state: present
+
+- name: enable and start nfs-server on RHEL
+  when:
+   - "ansible_os_family == 'RedHat'"
+  systemd:
+    name: nfs-server
+    enabled: True
+    state: started
+
+- name: Enable and start services for nfs-server on RedHat
+  when:
+   - "ansible_os_family == 'RedHat'"
+  systemd:
+    name: "{{ item }}" # ['rpcbind', 'rpc-statd', 'nfs-idmapd']
+    enabled: True
+    state: started
+  with_items:
+    - rpcbind
+    - rpc-statd
+    - nfs-idmapd
+ 
+- name: enable and start nfs-server on Ubuntu
+  when:
+    - "ansible_os_family == 'Debian'"
+  systemd:
+    name: nfs-kernel-server
+    enabled: True
+    state: started
+
+- name: enable and start nfs-server on RHEL
+  when:
+   - "ansible_os_family == 'RedHat'"
+  systemd:
+    name: nfs-server
+    enabled: True
+    state: started
+
+- name: force systemd to reread configs 
+  systemd: daemon_reload=yes
+
