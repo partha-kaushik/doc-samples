@@ -14,6 +14,6 @@ In Ansible, a role is a collection of tasks that are to be run against a host in
 
 Ansible Directory Structure:
 
-![alt text](https://github.com/partha-kaushik/code-and-doc-examples/tree/master/ansible-samples/ansible_directory_structure.png "Directory Structure")
+![alt text](ansible_directory_structure.png "Directory Structure")
 
 
