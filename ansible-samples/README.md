@@ -12,4 +12,8 @@ Consider the hosts in your inventory as 'raw actors'. In Ansible terms, when you
 
 In Ansible, a role is a collection of tasks that are to be run against a host in order to purpose the host for that role. A role is organised as a directory with a sub-directory (tasks) that holds the tasks.
 
+Ansible Directory Structure:
+
+![alt text](https://github.com/partha-kaushik/code-and-doc-examples/tree/master/ansible-samples/ansible_directory_structure.png "
+
 
