@@ -1,0 +1,24 @@
+/*
+* A jenkinsfile can be given any name and can be in a sub-directory
+* My convention is to give it a .jkf extension
+*/
+
+// Example code to show how to deal with mixed population of windows and linux slaves
+node('MY_NODE_LABEL') {
+    stage('Get working-directory and current user') {
+        if (!isUnix()) {
+            WORKDIR = bat(script: "cd", returnStdout: true).trim()
+            currentUser = bat(script: "whoami", returnStdout: true).trim()
+            trimRegex = ~/^.*whoami/
+            currentUser = (currentUser - trimRegex).trim()
+        } else {
+            WORKDIR = sh(script: "echo `pwd`", returnStdout: true).trim()
+            currentUser = sh(script: "echo `whoami`", returnStdout: true).trim()
+        }
+
+        env.currentUser = currentUser
+        println("current user is: " + env.currentUser)
+        env.WORKDIR = WORKDIR
+        println("Path: " + env.WORKDIR)
+    }
+}
