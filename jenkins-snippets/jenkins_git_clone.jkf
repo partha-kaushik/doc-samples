@@ -1,0 +1,51 @@
+/*
+* A jenkinsfile can be given any name and can be in a sub-directory
+* My convention is to give it a .jkf extension
+*/
+
+// Define a function to do git-cloning
+def myCheckout(myGitUrl, myBranch, myLocalDir) {
+    checkout changelog: false,
+            poll: false,
+            scm: [$class: 'GitSCM',
+                          branches: [[name: myBranch]],
+                          doGenerateSubmoduleConfigurations: false,
+                          extensions: [[$class: 'RelativeTargetDirectory',
+                                        relativeTargetDir: myLocalDir]],
+                          submoduleCfg: [],
+                          userRemoteConfigs: [[credentialsId: 'GithubSSH',
+                                               url: myGitUrl]]]
+}
+
+// call the git-cloning function where you need it
+node ('MY_NODE_LABEL') {
+    stage ('Clone Git') {
+        echo "Cloning git"
+        def partha_url = "git@github.com:partha-kaushik/code-and-doc-examples.git"
+        def partha_branch = "*/add-ansible-samples"
+        def local_dir = "code_samples"
+        myCheckout(partha_url, partha_branch, local_dir)
+
+        // set an environment variable, value of local_dir
+        env.LOCAL_DIR = local_dir
+
+        // Verify
+        sh "ls -la"
+        sh "ls -la ${LOCAL_DIR}"
+        def CWDABSPATH
+        CWDABSPATH = sh (
+                script: "echo `pwd`",
+                returnStdout: true
+        ).trim()
+        println "Current Working Directory: " + CWDABSPATH
+        env.BASEPATH = CWDABSPATH  // set env var for BASEPATH
+    }
+
+    stage ('compile with gradle') {
+
+    }
+
+    stage ('compose the app') {
+
+    }
+}
