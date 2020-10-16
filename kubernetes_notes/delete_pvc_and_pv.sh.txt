@@ -1,0 +1,20 @@
+#!/bin/bash
+###
+# Reinstalling a release may sometimes need clean-up of
+# persistent-volumes and persistent-volume-claims
+# delete the claims and then the volumes
+###
+echo kubectl delete -n mynamespace pvc myapp-logs-pv
+kubectl delete -n mynamespace pvc myapp-logs-pv
+
+echo kubectl delete -n mynamespace pvc myapp-mongo-pv
+kubectl delete -n mynamespace pvc myapp-mongo-pv
+
+echo kubectl delete pv myapp-logs-pv
+kubectl delete pv myapp-logs-pv
+
+echo kubectl delete pv myapp-mongo-pv
+kubectl delete pv myapp-mongo-pv
+
+echo sleep 10, waiting for things to settle down
+sleep 10s

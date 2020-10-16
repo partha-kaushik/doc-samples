@@ -1,0 +1,43 @@
+#!/bin/bash
+
+export MASTER_NODE_IP=${1}; CLUSTER_USER="${2}"; CLUSTER_PASSWORD="${3}"
+export AUTH_TOKEN=$(curl -k -H "Content-Type: application/x-www-form-urlencoded;charset=UTF-8" -d "grant_type=password&client_id=rp&client_secret=LDo8LTor&username=${CLUSTER_USER}&password=${CLUSTER_PASSWORD}&scope=openid" https://${MASTER_NODE_IP}:8443/idprovider/v1/auth/identitytoken | cut -d':' -f7 |   sed -e 's/^"//' -e 's/"}$//')
+export CLUSTER_NAME='mykubecluster.tst'
+
+# Configure Client
+kubectl config set-cluster ${CLUSTER_NAME} --server=https://${MASTER_NODE_IP}:8001 --insecure-skip-tls-verify=true
+kubectl config set-context ${CLUSTER_NAME}-context --cluster=${CLUSTER_NAME}
+kubectl config set-credentials ${CLUSTER_NAME}-user --token=${AUTH_TOKEN}
+kubectl config set-context ${CLUSTER_NAME}-context --user=${CLUSTER_NAME}-user --namespace=default
+kubectl config use-context ${CLUSTER_NAME}-context
+
+`kubectl get nodes -o wide > kubernetes_status.txt`
+i=0
+while read LINE
+do
+	status=`echo $LINE | awk '{print $2}'`
+
+		#Skip the first iteration
+		if [ "$status" == "STATUS" ]
+		then
+			continue
+		fi
+
+		#Check which services are not in running state, if not running copy them to an array
+		if [ "$status" != "Ready" ]
+		then
+			service=`echo $LINE | awk '{print $1}'`
+			arr[$i]=$service
+			let i++
+			echo "$service is not ready"
+fi
+done < kubernetes_status.txt
+
+if [ $i -gt 0 ]
+then
+    echo -e "Following nodes are not in ready state : \n${arr[@]}"
+    exit 1
+else
+    echo "All kubernetes nodes are in ready state"
+    exit 0
+fi
