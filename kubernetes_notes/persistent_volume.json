@@ -1,0 +1,71 @@
+{
+ "kind":"PersistentVolume",
+ "apiVersion":"v1",
+ "metadata":{
+  "name":"myapp-mongo-pv",
+  "labels":{
+    "type":"myapp-mongo"
+  }
+ },
+ "spec":{
+  "capacity":{
+   "storage":"15Gi"
+  },
+  "accessModes":[
+   "ReadWriteMany"
+  ],
+  "persistentVolumeReclaimPolicy":"Retain",
+  "nfs":{
+   "server":"10.11.12.13",
+   "path":"/export/myapp_db"
+  }
+ }
+}
+
+{
+ "kind":"PersistentVolume",
+ "apiVersion":"v1",
+ "metadata":{
+  "name":"myapp-logs-pv",
+  "labels":{
+    "type":"myapp-logs"
+  }
+ },
+ "spec":{
+  "capacity":{
+   "storage":"10Gi"
+  },
+  "accessModes":[
+   "ReadWriteMany"
+  ],
+  "persistentVolumeReclaimPolicy":"Retain",
+  "nfs":{
+   "server":"10.11.12.13",
+   "path":"/export/myapp_logs"
+  }
+ }
+}
+
+{
+ "kind":"PersistentVolume",
+ "apiVersion":"v1",
+ "metadata":{
+  "name":"myapp-terraform-pv",
+  "labels":{
+   "type":"myapp-terraform"
+  }
+ },
+ "spec":{
+  "capacity":{
+   "storage":"15Gi"
+  },
+  "accessModes":[
+   "ReadWriteMany"
+  ],
+  "persistentVolumeReclaimPolicy":"Retain",
+  "nfs":{
+   "server":"10.11.12.13",
+   "path":"/export/myapp_terraform"
+  }
+ }
+}
